@@ -153,7 +153,9 @@ ggmap(Twin_Cities) +
   geom_point(data = Starbucks,
              aes(x = Longitude, y = Latitude),
              size = .5) +
-  annotate(geom = "text", x = -93.169, y = 44.937, label = "Macalester")
+  annotate(geom = "text", x = -93.169, y = 44.937, label = "Macalester",
+           size = 2.5, 
+           color = "darkorange2") +
   theme_map()
 ```
 
@@ -162,21 +164,50 @@ ggmap(Twin_Cities) +
 The example I showed in the tutorial did not account for population of each state in the map. In the code below, a new variable is created, `starbucks_per_10000`, that gives the number of Starbucks per 10,000 people. It is in the `starbucks_with_2018_pop_est` dataset.
 
 ```{r}
-census_pop_est_2018 <- read_csv("https://www.dropbox.com/s/6txwv3b4ng7pepe/us_census_2018_state_pop_est.csv?dl=1") %>% 
+census_pop_est_2018 <- read_csv("https://www.dropbox.com/s/6txwv3b4ng7pepe/us_census_2018_state_pop_est.csv?dl=1") %>%  
+  #Reads Data in and creates new data set for census data
   separate(state, into = c("dot","state"), extra = "merge") %>% 
+  #Separates the dot from the state name by moving it to a new column   
   select(-dot) %>% 
+  #Selects everything except for the dot column, removing the dot
   mutate(state = str_to_lower(state))
+  #Converts the state names to lower case
 
 starbucks_with_2018_pop_est <-
+  #Funnels operations into new data set
   starbucks_us_by_state %>% 
   left_join(census_pop_est_2018,
             by = c("state_name" = "state")) %>% 
+  #Joins data sets w/ # of Starbucks per state and population per state in 2018
   mutate(starbucks_per_10000 = (n/est_pop_2018)*10000)
+  #Divides # of Starbucks per state by population in that state to find Starbucks per capita in each state, then multiplies it by 10,000 to find the # of Starbucks per 10,000
 ```
 
   6. **`dplyr` review**: Look through the code above and describe what each line of code does.
 
   7. Create a choropleth map that shows the number of Starbucks per 10,000 people on a map of the US. Use a new fill color, add points for all Starbucks in the US (except Hawaii and Alaska), add an informative title for the plot, and include a caption that says who created the plot (you!). Make a conclusion about what you observe.
+```{r}
+US_Starbucks <-
+Starbucks %>%
+  filter(Country == "US") %>%
+  filter(!`State/Province` == "AK",
+         !`State/Province` == "HI")
+
+states_map <- map_data("state")
+starbucks_with_2018_pop_est %>%
+  ggplot() +
+  geom_map(map = states_map,
+           aes(map_id = state_name,
+               fill = starbucks_per_10000)) +
+   geom_point(data = US_Starbucks,
+              aes(x = Longitude, y = Latitude),
+             size = .5,
+             alpha = .5) +
+  scale_fill_gradient(low="blue", high="red") +
+  expand_limits(x = states_map$long, y = states_map$lat) + 
+  theme_map()
+  
+```
 
 ### A few of your favorite things (`leaflet`)
 
@@ -189,6 +220,9 @@ starbucks_with_2018_pop_est <-
   * Connect all your locations together with a line in a meaningful way (you may need to order them differently in the original data).  
   
   * If there are other variables you want to add that could enhance your plot, do that now.  
+```{r}
+
+```
   
 ## Revisiting old datasets
 
