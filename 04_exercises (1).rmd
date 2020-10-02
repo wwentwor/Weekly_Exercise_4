@@ -108,10 +108,13 @@ ggmap(world) +
                  color = `Ownership Type`),
              size = .1,
              alpha = .3)+
-  theme_map()
+  theme_map() +
+  labs(title = "Global Starbucks Locations")
 
 
 ```
+
+**In the U.S and most of Europe, most stores are company owned or licensed. In Japan, Russia, and the coast of eastern China, most locations are joint venture. This likely has something to do with how Starbucks expands into markets that are pretty different compared to Western ones.**
 
   2. Construct a new map of Starbucks locations in the Twin Cities metro area (approximately the 5 county metro area).  
 ```{r}
@@ -123,7 +126,8 @@ ggmap(Twin_Cities) +
   geom_point(data = Starbucks,
              aes(x = Longitude, y = Latitude),
              size = .5) +
-  theme_map()
+  theme_map() +
+  labs(title = "Twin Cities Starbucks Locations")
 ```
 
   3. In the Twin Cities plot, play with the zoom number. What does it do?  (just describe what it does - don't actually include more than one map).  
@@ -140,7 +144,8 @@ ggmap(Twin_Cities) +
   geom_point(data = Starbucks,
              aes(x = Longitude, y = Latitude),
              size = .5) +
-  theme_map()
+  theme_map()+
+  labs(title = "Twin Cities Starbucks Locations")
 ```
 
   5. Add a point to the map that indicates Macalester College and label it appropriately. There are many ways you can do think, but I think it's easiest with the `annotate()` function (see `ggplot2` cheatsheet).
@@ -156,7 +161,8 @@ ggmap(Twin_Cities) +
   annotate(geom = "text", x = -93.169, y = 44.937, label = "Macalester",
            size = 2.5, 
            color = "darkorange2") +
-  theme_map()
+  theme_map()+
+  labs(title = "Twin Cities Starbucks Locations")
 ```
 
 ### Choropleth maps with Starbucks data (`geom_map()`)
@@ -205,9 +211,13 @@ starbucks_with_2018_pop_est %>%
              alpha = .5) +
   scale_fill_gradient(low="blue", high="red") +
   expand_limits(x = states_map$long, y = states_map$lat) + 
-  theme_map()
+  theme_map() +
+  labs(title = "States Colored by Starbucks Stores per 10,000 People",
+       subtitle = "Created by William Wentworth")
   
 ```
+
+**It looks like the West Coast has the most Starbucks per capita, as those states are far more pinkish red than the rest of the country. This is probably because it started in Seattle and would've expanded there first. It's also interesting to see how the Starbucks locations are spread out across the country. It's probably a good indication of where the urban populations are across the U.S.**  
 
 ### A few of your favorite things (`leaflet`)
 
@@ -293,7 +303,8 @@ ggmap(DC) +
              aes(x = long, y = lat, color = Total_departures),
              size = .5) +
   scale_color_viridis_c(option = "magma") +
-  theme_map() 
+  theme_map()+
+  labs(title = "D.C. Bike Rental Stations") 
 ```
   
   10. Only 14.4% of the trips in our data are carried out by casual users. Create a plot that shows which area(s) have stations with a much higher percentage of departures by casual users. What patterns do you notice? Also plot this on top of a map. I think it will be more clear what the patterns are.
@@ -313,8 +324,11 @@ ggmap(DC) +
              aes(x = long, y = lat, color = proportion),
              size = .8) +
   scale_color_viridis_c(option = "magma") +
-  theme_map() 
+  theme_map() +
+  labs(title = "D.C. Bike Rental Stations Use by Casual Riders")
 ```
+
+**The stations with the highest proportion of casual riders are mostly in the center of DC. It looks like they're all clustered in or near the National Mall, the most touristy part of the city. Most of the lower proportion stations are located outside of downtown, implying that the registered users are probably commuting with them.**
   
 ### COVID-19 data
 
@@ -337,8 +351,11 @@ currentcovid19 %>%
            aes(map_id = state_name,
                fill = cases)) +
   expand_limits(x = states_map$long, y = states_map$lat) + 
-  theme_map()
+  theme_map() + 
+  labs(title = "Covid Cases by State")
 ```
+  
+  **The more populous states are all lighter colors, meaning they have more active cases. The graphs issue is that it doesn't take into account population so even if states like California have fewer cases per capita than say Alabama, this graph will still show California as having way more cases than Alabama.**  
   
   12. Now add the population of each state to the dataset and color the states by most recent cumulative cases/10,000 people. See the code for doing this with the Starbucks data. You will need to make some modifications. 
 ```{r}
@@ -355,7 +372,8 @@ covid_with_2018_pop_est %>%
                fill = `Cases per 10000 People`)) +
   scale_fill_gradient(low="cadetblue1", high="midnightblue") +
   expand_limits(x = states_map$long, y = states_map$lat) + 
-  theme_map()
+  theme_map() + 
+  labs(title = "Covid Cases per 10,000 People by State")
 ```
   
   13. **CHALLENGE** Choose 4 dates spread over the time period of the data and create the same map as in exercise 12 for each of the dates. Display the four graphs together using faceting. What do you notice?
@@ -383,8 +401,11 @@ comparecovid_with_2018_pop_est %>%
   scale_fill_gradient(low="cadetblue1", high="midnightblue") +
   expand_limits(x = states_map$long, y = states_map$lat) + 
   theme_map() + 
-  facet_wrap(vars(date))
+  facet_wrap(vars(date))+ 
+  labs(title = "Covid Cases per 10,000 People by State")
 ```
+  
+  **The map gets progressively darker as the months go on. There are way more cases now per 10,000 people than there were at the start and even middle of the pandemic.** 
   
 ## Minneapolis police stops
 
@@ -396,9 +417,9 @@ MplsStops %>%
   group_by(neighborhood) %>%
   mutate(total_neighborhood_stops = n()) %>%
   group_by(neighborhood, problem) %>%
-  mutate(proportion_of_neighborhoodstops = n()/total_neighborhood_stops) %>%
+  mutate(prop_suspicious = n()/total_neighborhood_stops) %>%
   filter(problem == "suspicious") %>%
-  group_by(neighborhood, problem, total_neighborhood_stops, proportion_of_neighborhoodstops) %>% 
+  group_by(neighborhood, problem, total_neighborhood_stops, prop_suspicious) %>% 
   distinct(neighborhood) -> mpls_suspicious
 
 mpls_suspicious
@@ -424,13 +445,63 @@ leaflet(MplsStops) %>%
   16. Save the folder from moodle called Minneapolis_Neighborhoods into your project/repository folder for this assignment. Make sure the folder is called Minneapolis_Neighborhoods. Use the code below to read in the data and make sure to **delete the `eval=FALSE`**. Although it looks like it only links to the .sph file, you need the entire folder of files to create the `mpls_nbhd` data set. These data contain information about the geometries of the Minneapolis neighborhoods. Using the `mpls_nbhd` dataset as the base file, join the `mpls_suspicious` and `MplsDemo` datasets to it by neighborhood (careful, they are named different things in the different files). Call this new dataset `mpls_all`.
 
 ```{r}
-mpls_nbhd <- st_read("Minneapolis_Neighborhoods/Minneapolis_Neighborhoods.shp", quiet = TRUE)
+mpls_nbhd <- st_read("Minneapolis_Neighborhoods-20201001", quiet = TRUE)
+
+mpls_nbhd %>%
+  left_join(MplsDemo,
+            by = c("BDNAME" = "neighborhood")) %>%
+  left_join(mpls_suspicious,
+            by = c("BDNAME" = "neighborhood")) -> mpls_all
+
 ```
 
   17. Use `leaflet` to create a map from the `mpls_all` data  that colors the neighborhoods by `prop_suspicious`. Display the neighborhood name as you scroll over it. Describe what you observe in the map.
+```{r}
+pal4 <- colorNumeric("Spectral",
+                     domain = mpls_all$prop_suspicious)
+
+leaflet(mpls_all) %>% 
+  addTiles() %>%
+  addPolygons(fillColor = ~pal4(mpls_all$prop_suspicious),
+              fillOpacity = 0.7,
+              label = ~BDNAME) %>%
+  addLegend(pal = pal4, 
+            values = ~prop_suspicious, 
+            opacity = 0.5,
+            position = "bottomright")
+```
+  
+  **According to the map, it looks like neighborhoods on the southeast side of the city have higher rates of suspicious stops. The northeastern side has much smaller rates of suspicious stops, making the east side almost perfectly divided by the river. The west side of the city is less divided and is mostly yellowish/orange, meaning its rates of suspicous stops are around and below 50%** 
   
   18. Use `leaflet` to create a map of your own choosing. Come up with a question you want to try to answer and use the map to help answer that question. Describe what your map shows. 
+```{r}
+MplsStops %>%
+  left_join(MplsDemo,
+            by = "neighborhood") %>%
+  group_by(neighborhood) %>%
+  mutate(total_neighborhood_stops = n(),
+         proportional_stops = total_neighborhood_stops/population) %>%
+  group_by(neighborhood, problem, total_neighborhood_stops, proportional_stops) %>% 
+  distinct(neighborhood) ->  Mpls_combined 
+
+mpls_nbhd %>%
+  left_join(Mpls_combined,
+            by = c("BDNAME" = "neighborhood")) -> Mpls_combined_vis
+
+pal5 <- colorNumeric("Spectral",
+                     domain = Mpls_combined_vis$proportional_stops)
+
+leaflet(Mpls_combined_vis) %>% 
+  addTiles() %>%
+  addPolygons(fillColor = ~pal5(Mpls_combined_vis$proportional_stops),
+              fillOpacity = 0.7) %>%
+  addLegend(pal = pal5, 
+            values = ~proportional_stops, 
+            opacity = 0.5,
+            position = "bottomright")
+```
   
+  **I wanted to see how the stops in each neighborhood compared to their population. The graph shows stops proportional to their population. For example, the neighborhood with the dark purple color has a high number of stops in proportion to their population. This could be indicative of over-policing of certain neighborhoods but could also just come down amount of traffic that each neighborhood has on average.**   
   
 ## GitHub link
 
